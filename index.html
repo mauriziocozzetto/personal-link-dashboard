@@ -8,36 +8,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            background-color: #0b1120;
-            color: #e2e8f0;
-        }
-
-        .card-bg {
-            background-color: #161e31;
-        }
-
-        .tab-active {
-            border-bottom: 2px solid #3b82f6;
-            color: #3b82f6;
-        }
-
-        .custom-scroll::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 10px;
-        }
+        body { background-color: #0b1120; color: #e2e8f0; }
+        .card-bg { background-color: #161e31; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .icon-btn { @apply text-slate-500 hover:text-blue-400 transition-colors p-1; }
+        .delete-btn { @apply text-slate-500 hover:text-red-500 transition-colors p-1; }
     </style>
 </head>
 
 <body class="min-h-screen font-sans">
 
-    <header
-        class="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-[#0b1120]/90 backdrop-blur-md z-40">
+    <header class="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-[#0b1120]/90 backdrop-blur-md z-40">
         <div class="flex items-center gap-2">
             <div class="bg-blue-600 p-1.5 rounded-lg"><i class="fas fa-rocket text-sm text-white"></i></div>
             <h1 class="font-bold text-lg hidden md:block tracking-tight">Personal Link Dashboard</h1>
@@ -49,13 +32,9 @@
                     class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-10 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
                     oninput="handleSearch(this.value)">
                 <i class="fas fa-search absolute left-3 top-3 text-slate-500 text-sm"></i>
-                <span
-                    class="absolute right-3 top-2.5 text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">⌘
-                    K</span>
+                <span class="absolute right-3 top-2.5 text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">⌘ K</span>
             </div>
-            <div id="searchResults"
-                class="absolute mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl hidden max-h-60 overflow-y-auto custom-scroll z-50">
-            </div>
+            <div id="searchResults" class="absolute mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl hidden max-h-60 overflow-y-auto custom-scroll z-50"></div>
         </div>
 
         <div class="flex items-center gap-4 text-slate-400">
@@ -65,14 +44,13 @@
     </header>
 
     <main class="max-w-7xl mx-auto p-6">
-        <div class="flex items-center gap-6 mb-8 border-b border-slate-800 overflow-x-auto custom-scroll pb-px"
-            id="tabs-container"></div>
+        <div class="flex items-center gap-6 mb-8 border-b border-slate-800 overflow-x-auto custom-scroll pb-px" id="tabs-container"></div>
 
         <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
         <button onclick="openCategoryModal()"
             class="mt-8 w-full border-2 border-dashed border-slate-800 rounded-xl py-8 flex flex-col items-center justify-center text-slate-500 hover:border-blue-500/50 hover:bg-blue-500/5 hover:text-blue-400 transition-all group">
-            <i class="fas fa-folder-plus text-xl mb-2 group-hover:scale-110 transition-transform"></i>
+            <i class="fas fa-plus-circle text-xl mb-2 group-hover:scale-110 transition-transform"></i>
             <span class="font-medium text-sm">Add Category to this Tab</span>
         </button>
     </main>
@@ -80,29 +58,23 @@
     <div id="tabModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
             <h2 id="tabModalTitle" class="text-xl font-bold mb-4 text-white">New Tab</h2>
-            <input type="text" id="tabName" placeholder="e.g. Work, Home"
+            <input type="text" id="tabName" maxlength="30" placeholder="Tab Name (max 30 chars)"
                 class="w-full bg-slate-800 rounded-lg p-3 outline-none border border-slate-700 focus:border-blue-500 text-white mb-6">
             <div class="flex justify-end gap-3">
-                <button onclick="closeModal('tabModal')"
-                    class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
-                <button onclick="saveTab()"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500 transition-colors">Save
-                    Tab</button>
+                <button onclick="closeModal('tabModal')" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button onclick="saveTab()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500">Save Tab</button>
             </div>
         </div>
     </div>
 
-    <div id="categoryModal"
-        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div id="categoryModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
             <h2 id="categoryModalTitle" class="text-xl font-bold mb-4 text-white">New Category</h2>
-            <input type="text" id="categoryName" placeholder="e.g. Social, Dev Tools"
+            <input type="text" id="categoryName" maxlength="30" placeholder="Category Name (max 30 chars)"
                 class="w-full bg-slate-800 rounded-lg p-3 outline-none border border-slate-700 focus:border-blue-500 text-white mb-6">
             <div class="flex justify-end gap-3">
-                <button onclick="closeModal('categoryModal')"
-                    class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
-                <button id="saveCategoryBtn" onclick="saveCategory()"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500 transition-colors">Save</button>
+                <button onclick="closeModal('categoryModal')" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button id="saveCategoryBtn" onclick="saveCategory()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500">Save</button>
             </div>
         </div>
     </div>
@@ -111,43 +83,36 @@
         <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
             <h2 id="linkModalTitle" class="text-xl font-bold mb-4 text-white">Add Link</h2>
             <div class="space-y-4">
-                <input type="text" id="linkName" placeholder="Name"
+                <input type="text" id="linkName" maxlength="30" placeholder="Name (max 30 chars)"
                     class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
                 <input type="text" id="linkUrl" placeholder="https://..."
                     class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
-                <input type="text" id="linkDesc" placeholder="Description"
+                <input type="text" id="linkDesc" maxlength="60" placeholder="Description (max 60 chars)"
                     class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
                 <input type="hidden" id="linkCategoryId">
             </div>
             <div class="flex justify-end gap-3 mt-8">
                 <button onclick="closeLinkModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
-                <button id="saveLinkBtn" onclick="saveLink()"
-                    class="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors">Save
-                    Link</button>
+                <button id="saveLinkBtn" onclick="saveLink()" class="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors">Save Link</button>
             </div>
         </div>
     </div>
 
-    <div id="confirmModal"
-        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm">
+    <div id="confirmModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-sm p-6 shadow-2xl text-center">
-            <div
-                class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-exclamation-triangle text-2xl"></i>
             </div>
             <h2 class="text-xl font-bold mb-2 text-white">Are you sure?</h2>
             <p id="confirmMessage" class="text-slate-400 text-sm mb-6"></p>
             <div class="flex justify-center gap-3">
-                <button onclick="closeModal('confirmModal')"
-                    class="px-4 py-2 text-slate-400 hover:text-white font-medium text-sm">Cancel</button>
-                <button id="confirmBtn"
-                    class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-500 transition-colors text-sm">Delete</button>
+                <button onclick="closeModal('confirmModal')" class="px-4 py-2 text-slate-400 hover:text-white font-medium text-sm">Cancel</button>
+                <button id="confirmBtn" class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-500 transition-colors text-sm">Delete</button>
             </div>
         </div>
     </div>
 
     <script>
-        // API_BASE dinamico per funzionare sia in locale che su Render
         const API_BASE = window.location.origin + "/api";
         let state = { tabs: [], activeTabId: null };
         let editingLinkId = null;
@@ -188,7 +153,7 @@
         }
 
         async function deleteTab(id, name) {
-            confirmDelete(`Delete tab "${name}" and all its content?`, async () => {
+            confirmDelete(`Delete tab "${name}"?`, async () => {
                 await fetch(`${API_BASE}/tabs/${id}`, { method: 'DELETE' });
                 if (state.activeTabId === id) state.activeTabId = null;
                 loadData();
@@ -219,7 +184,7 @@
         }
 
         async function deleteCategory(id) {
-            confirmDelete("Delete this category and all its links?", async () => {
+            confirmDelete("Delete this category?", async () => {
                 await fetch(`${API_BASE}/categories/${id}`, { method: 'DELETE' });
                 loadData();
             });
@@ -277,7 +242,6 @@
             });
         }
 
-        // --- SEARCH ---
         async function handleSearch(query) {
             const resultsDiv = document.getElementById('searchResults');
             if (query.length < 2) { resultsDiv.classList.add('hidden'); return; }
@@ -297,9 +261,7 @@
             }
         }
 
-        // --- RENDER ---
         function render() {
-            // Render Tabs
             const tabsCont = document.getElementById('tabs-container');
             let tabsHtml = state.tabs.map(tab => `
                 <div class="group relative flex items-center shrink-0">
@@ -308,15 +270,14 @@
                         ${tab.name}
                     </button>
                     <div class="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity pb-3">
-                        <button onclick="openTabModal(${tab.id}, '${tab.name}')" class="text-[10px] text-slate-500 hover:text-blue-400"><i class="fas fa-pen"></i></button>
-                        <button onclick="deleteTab(${tab.id}, '${tab.name}')" class="text-[10px] text-slate-500 hover:text-red-500"><i class="fas fa-times"></i></button>
+                        <button onclick="openTabModal(${tab.id}, '${tab.name}')" class="text-slate-500 hover:text-blue-400 p-1"><i class="fas fa-pen text-[10px]"></i></button>
+                        <button onclick="deleteTab(${tab.id}, '${tab.name}')" class="text-slate-500 hover:text-red-500 p-1"><i class="fas fa-times text-[10px]"></i></button>
                     </div>
                 </div>
             `).join('');
-            tabsHtml += `<button onclick="openTabModal()" class="pb-3 text-slate-500 hover:text-blue-500 px-2 transition-colors"><i class="fas fa-plus"></i></button>`;
+            tabsHtml += `<button onclick="openTabModal()" class="pb-3 text-slate-500 hover:text-blue-400 transition-colors"><i class="fas fa-plus-circle"></i></button>`;
             tabsCont.innerHTML = tabsHtml;
 
-            // Render active tab content
             const activeTab = state.tabs.find(t => t.id === state.activeTabId);
             const grid = document.getElementById('categories-grid');
             if (!activeTab || activeTab.categories.length === 0) {
@@ -330,9 +291,7 @@
                         <h3 class="text-[11px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> 
                             ${cat.name}
-                            <button onclick="openCategoryModal(${cat.id}, '${cat.name}')" class="opacity-0 group-hover:opacity-100 ml-1 text-slate-600 hover:text-blue-400 transition-all">
-                                <i class="fas fa-pen text-[9px]"></i>
-                            </button>
+                            <button onclick="openCategoryModal(${cat.id}, '${cat.name}')" class="opacity-0 group-hover:opacity-100 ml-1 text-slate-600 hover:text-blue-400"><i class="fas fa-pen text-[9px]"></i></button>
                         </h3>
                         <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onclick="openLinkModal(${cat.id})" class="text-slate-500 hover:text-blue-400 p-1"><i class="fas fa-plus-circle"></i></button>
@@ -362,7 +321,6 @@
             `).join('');
         }
 
-        // --- HELPERS ---
         function showModal(id) { document.getElementById(id).classList.replace('hidden', 'flex'); }
         function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
         function closeLinkModal() {
