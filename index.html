@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Link Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0b1120;
+            color: #e2e8f0;
+        }
+
+        .card-bg {
+            background-color: #161e31;
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        .truncate-custom {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen font-sans">
+
+    <header
+        class="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-[#0b1120]/90 backdrop-blur-md z-40">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-1.5 rounded-lg"><i class="fas fa-rocket text-sm text-white"></i></div>
+            <h1 class="font-bold text-lg hidden md:block tracking-tight">Personal Link Dashboard</h1>
+        </div>
+
+        <div class="relative w-full max-w-md mx-4">
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Search links... (Cmd+K)"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-10 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
+                    oninput="handleSearch(this.value)">
+                <i class="fas fa-search absolute left-3 top-3 text-slate-500 text-sm"></i>
+                <span
+                    class="absolute right-3 top-2.5 text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 border border-slate-700">⌘
+                    K</span>
+            </div>
+            <div id="searchResults"
+                class="absolute mt-2 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl hidden max-h-60 overflow-y-auto custom-scroll z-50">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-slate-400">
+            <i class="fas fa-cog cursor-pointer hover:text-white transition-colors"></i>
+            <i class="fas fa-desktop cursor-pointer hover:text-white transition-colors"></i>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="flex items-center gap-6 mb-8 border-b border-slate-800 overflow-x-auto custom-scroll pb-px"
+            id="tabs-container">
+        </div>
+
+        <div id="categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+
+        <button onclick="openCategoryModal()"
+            class="mt-8 w-full border-2 border-dashed border-slate-800 rounded-xl py-8 flex flex-col items-center justify-center text-slate-500 hover:border-blue-500/50 hover:bg-blue-500/5 hover:text-blue-400 transition-all group">
+            <i class="fas fa-folder-plus text-xl mb-2 group-hover:scale-110 transition-transform"></i>
+            <span class="font-medium text-sm">Add Category to this Tab</span>
+        </button>
+    </main>
+
+    <div id="tabModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
+            <h2 id="tabModalTitle" class="text-xl font-bold mb-4 text-white">New Tab</h2>
+            <input type="text" id="tabName" placeholder="e.g. Work, Home"
+                class="w-full bg-slate-800 rounded-lg p-3 outline-none border border-slate-700 focus:border-blue-500 text-white mb-6">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal('tabModal')"
+                    class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button onclick="saveTab()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500 transition-colors">Save
+                    Tab</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoryModal"
+        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
+            <h2 id="categoryModalTitle" class="text-xl font-bold mb-4 text-white">New Category</h2>
+            <input type="text" id="categoryName" placeholder="e.g. Social, Dev Tools"
+                class="w-full bg-slate-800 rounded-lg p-3 outline-none border border-slate-700 focus:border-blue-500 text-white mb-6">
+            <input type="hidden" id="editCategoryId">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal('categoryModal')"
+                    class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button id="saveCategoryBtn" onclick="saveCategory()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-500 transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="linkModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl">
+            <h2 id="linkModalTitle" class="text-xl font-bold mb-4 text-white">Add Link</h2>
+            <div class="space-y-4">
+                <input type="text" id="linkName" placeholder="Name"
+                    class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
+                <input type="text" id="linkUrl" placeholder="https://..."
+                    class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
+                <input type="text" id="linkDesc" placeholder="Description"
+                    class="w-full bg-slate-800 rounded-lg p-2.5 outline-none border border-slate-700 focus:border-blue-500 text-white">
+                <input type="hidden" id="linkCategoryId">
+            </div>
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closeLinkModal()" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button id="saveLinkBtn" onclick="saveLink()"
+                    class="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors">Save
+                    Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal"
+        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[60] p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-sm p-6 shadow-2xl text-center">
+            <div
+                class="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-bold mb-2 text-white">Are you sure?</h2>
+            <p id="confirmMessage" class="text-slate-400 text-sm mb-6"></p>
+            <div class="flex justify-center gap-3">
+                <button onclick="closeModal('confirmModal')"
+                    class="px-4 py-2 text-slate-400 hover:text-white font-medium">Cancel</button>
+                <button id="confirmBtn"
+                    class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-500 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api";
+        let state = { tabs: [], activeTabId: null };
+        let editingLinkId = null;
+        let editingTabId = null;
+        let editingCategoryId = null;
+
+        async function loadData() {
+            try {
+                const res = await fetch(`${API_BASE}/tabs`);
+                state.tabs = await res.json();
+                if (state.tabs.length > 0 && !state.activeTabId) {
+                    state.activeTabId = state.tabs[0].id;
+                }
+                render();
+            } catch (e) { console.error("Load error:", e); }
+        }
+
+        // --- TABS ---
+        function openTabModal(id = null, name = '') {
+            editingTabId = id;
+            document.getElementById('tabName').value = name;
+            document.getElementById('tabModalTitle').innerText = id ? "Rename Tab" : "New Tab";
+            showModal('tabModal');
+        }
+
+        async function saveTab() {
+            const name = document.getElementById('tabName').value;
+            if (!name) return;
+            const method = editingTabId ? 'PUT' : 'POST';
+            const url = editingTabId ? `${API_BASE}/tabs/${editingTabId}` : `${API_BASE}/tabs`;
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, id: editingTabId || 0 })
+            });
+            closeModal('tabModal');
+            loadData();
+        }
+
+        async function deleteTab(id, name) {
+            confirmDelete(`Eliminare la tab "${name}" e tutto il suo contenuto?`, async () => {
+                await fetch(`${API_BASE}/tabs/${id}`, { method: 'DELETE' });
+                if (state.activeTabId === id) state.activeTabId = null;
+                loadData();
+            });
+        }
+
+        // --- CATEGORIES ---
+        function openCategoryModal(id = null, name = '') {
+            editingCategoryId = id;
+            document.getElementById('categoryName').value = name;
+            document.getElementById('categoryModalTitle').innerText = id ? "Rename Category" : "New Category";
+            document.getElementById('saveCategoryBtn').innerText = id ? "Update" : "Save";
+            showModal('categoryModal');
+        }
+
+        async function saveCategory() {
+            const name = document.getElementById('categoryName').value;
+            if (!name) return;
+            const method = editingCategoryId ? 'PUT' : 'POST';
+            const url = editingCategoryId ? `${API_BASE}/categories/${editingCategoryId}` : `${API_BASE}/categories`;
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, tab_id: state.activeTabId })
+            });
+            closeModal('categoryModal');
+            loadData();
+        }
+
+        async function deleteCategory(id) {
+            confirmDelete("Eliminare questa categoria e tutti i suoi link?", async () => {
+                await fetch(`${API_BASE}/categories/${id}`, { method: 'DELETE' });
+                loadData();
+            });
+        }
+
+        // --- LINKS ---
+        function openLinkModal(catId) {
+            editingLinkId = null;
+            document.getElementById('linkCategoryId').value = catId;
+            document.getElementById('linkModalTitle').innerText = "Add Link";
+            document.getElementById('saveLinkBtn').innerText = "Save Link";
+            showModal('linkModal');
+        }
+
+        function openEditLinkModal(linkId) {
+            let link = null;
+            state.tabs.forEach(t => t.categories.forEach(c => {
+                const found = c.links.find(l => l.id === linkId);
+                if (found) link = found;
+            }));
+            if (!link) return;
+
+            editingLinkId = link.id;
+            document.getElementById('linkName').value = link.name;
+            document.getElementById('linkUrl').value = link.url;
+            document.getElementById('linkDesc').value = link.description || '';
+            document.getElementById('linkCategoryId').value = link.category_id;
+            document.getElementById('linkModalTitle').innerText = "Edit Link";
+            document.getElementById('saveLinkBtn').innerText = "Update Link";
+            showModal('linkModal');
+        }
+
+        async function saveLink() {
+            const link = {
+                name: document.getElementById('linkName').value,
+                url: document.getElementById('linkUrl').value,
+                description: document.getElementById('linkDesc').value,
+                category_id: parseInt(document.getElementById('linkCategoryId').value)
+            };
+            const method = editingLinkId ? 'PUT' : 'POST';
+            const url = editingLinkId ? `${API_BASE}/links/${editingLinkId}` : `${API_BASE}/links`;
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(link)
+            });
+            closeLinkModal();
+            loadData();
+        }
+
+        async function deleteLink(id) {
+            confirmDelete("Eliminare questo link?", async () => {
+                await fetch(`${API_BASE}/links/${id}`, { method: 'DELETE' });
+                loadData();
+            });
+        }
+
+        // --- SEARCH ---
+        async function handleSearch(query) {
+            const resultsDiv = document.getElementById('searchResults');
+            if (query.length < 2) { resultsDiv.classList.add('hidden'); return; }
+            const res = await fetch(`${API_BASE}/search?q=${query}`);
+            const links = await res.json();
+            if (links.length > 0) {
+                resultsDiv.innerHTML = links.map(link => `
+                    <a href="${link.url}" target="_blank" class="flex items-center gap-3 p-3 hover:bg-slate-800 transition-colors border-b border-slate-800 last:border-0">
+                        <img src="https://www.google.com/s2/favicons?domain=${link.url}" class="w-4 h-4">
+                        <div class="flex flex-col"><span class="text-sm font-medium text-white">${link.name}</span><span class="text-[10px] text-slate-500">${link.url}</span></div>
+                    </a>
+                `).join('');
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = `<div class="p-4 text-sm text-slate-500">No links found.</div>`;
+                resultsDiv.classList.remove('hidden');
+            }
+        }
+
+        // --- RENDER ---
+        function render() {
+            // Tabs
+            const tabsCont = document.getElementById('tabs-container');
+            let tabsHtml = state.tabs.map(tab => `
+                <div class="group relative flex items-center shrink-0">
+                    <button onclick="state.activeTabId = ${tab.id}; render();" 
+                        class="pb-3 text-sm font-semibold transition-all ${state.activeTabId === tab.id ? 'tab-active' : 'text-slate-500 hover:text-slate-300'}">
+                        ${tab.name}
+                    </button>
+                    <div class="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity pb-3">
+                        <button onclick="openTabModal(${tab.id}, '${tab.name}')" class="text-[10px] text-slate-500 hover:text-blue-400"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteTab(${tab.id}, '${tab.name}')" class="text-[10px] text-slate-500 hover:text-red-500"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            tabsHtml += `<button onclick="openTabModal()" class="pb-3 text-slate-500 hover:text-blue-500 px-2 transition-colors"><i class="fas fa-plus"></i></button>`;
+            tabsCont.innerHTML = tabsHtml;
+
+            // Categories
+            const activeTab = state.tabs.find(t => t.id === state.activeTabId);
+            const grid = document.getElementById('categories-grid');
+            if (!activeTab || activeTab.categories.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-600 italic">No categories here yet.</div>`;
+                return;
+            }
+
+            grid.innerHTML = activeTab.categories.map(cat => `
+                <div class="card-bg rounded-xl border border-slate-800/50 p-5 group shadow-sm transition-all hover:border-slate-700">
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-[11px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> 
+                            ${cat.name}
+                            <button onclick="openCategoryModal(${cat.id}, '${cat.name}')" class="opacity-0 group-hover:opacity-100 ml-1 text-slate-600 hover:text-blue-400 transition-all">
+                                <i class="fas fa-pen text-[9px]"></i>
+                            </button>
+                        </h3>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="openLinkModal(${cat.id})" class="text-slate-500 hover:text-blue-400 p-1"><i class="fas fa-plus-circle"></i></button>
+                            <button onclick="deleteCategory(${cat.id})" class="text-slate-500 hover:text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        ${cat.links.map(link => `
+                            <div class="flex items-center justify-between group/item p-2 hover:bg-slate-800/40 rounded-lg transition-all">
+                                <a href="${link.url}" target="_blank" class="flex items-center gap-3 flex-1 overflow-hidden">
+                                    <div class="min-w-[32px] h-8 bg-slate-800 rounded flex items-center justify-center">
+                                        <img src="https://www.google.com/s2/favicons?domain=${link.url}" class="w-4 h-4" onerror="this.src='https://www.google.com/favicon.ico'">
+                                    </div>
+                                    <div class="truncate">
+                                        <div class="text-sm font-medium text-slate-200 truncate">${link.name}</div>
+                                        ${link.description ? `<div class="text-[10px] text-slate-500 truncate">${link.description}</div>` : ''}
+                                    </div>
+                                </a>
+                                <div class="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-all ml-2">
+                                    <button onclick="openEditLinkModal(${link.id})" class="text-slate-600 hover:text-blue-400 p-1"><i class="fas fa-pencil-alt text-xs"></i></button>
+                                    <button onclick="deleteLink(${link.id})" class="text-slate-600 hover:text-red-500 p-1"><i class="fas fa-times text-xs"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- UTILS ---
+        function showModal(id) { document.getElementById(id).classList.replace('hidden', 'flex'); }
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+        function closeLinkModal() {
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkDesc').value = '';
+            closeModal('linkModal');
+        }
+
+        function confirmDelete(message, onConfirm) {
+            document.getElementById('confirmMessage').innerText = message;
+            const btn = document.getElementById('confirmBtn');
+            btn.onclick = async () => {
+                await onConfirm();
+                closeModal('confirmModal');
+            };
+            showModal('confirmModal');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#searchInput')) document.getElementById('searchResults').classList.add('hidden');
+        });
+
+        loadData();
+    </script>
+</body>
+
+</html>
