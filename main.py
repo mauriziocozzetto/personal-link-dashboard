@@ -51,22 +51,66 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Crea tabelle e dati iniziali
+    # Startup: Crea tabelle
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        if not db.query(Tab).first():
+        # Controlliamo se la Tab "Work" esiste già per evitare duplicati
+        if not db.query(Tab).filter(Tab.name == "Work").first():
+            # 1. Creazione Tab
             work = Tab(name="Work")
             personal = Tab(name="Personal")
             db.add_all([work, personal])
             db.commit()
+            db.refresh(work)
+            db.refresh(personal)
+
+            # 2. Creazione Categorie per Work
+            dev_tools = Category(name="Dev Tools", tab_id=work.id)
+            social_work = Category(name="Social", tab_id=work.id)
+            db.add_all([dev_tools, social_work])
+            db.commit()
+            db.refresh(dev_tools)
+
+            # 3. Creazione Categorie per Personal
+            social_pers = Category(name="Social", tab_id=personal.id)
+            web_tools = Category(name="Web Tools", tab_id=personal.id)
+            db.add_all([social_pers, web_tools])
+            db.commit()
+            db.refresh(dev_tools)
+            db.refresh(social_pers)
+
+            # 4. Inserimento Link di esempio
+            links = [
+                # Link per Work -> Dev Tools
+                Link(name="GitHub", url="https://github.com",
+                     description="Code repositories", category_id=dev_tools.id),
+                Link(name="Stack Overflow", url="https://stackoverflow.com",
+                     description="Q&A for developers", category_id=dev_tools.id),
+
+                # Link per Work -> Social
+                Link(name="LinkedIn", url="https://linkedin.com",
+                     description="Professional network", category_id=social_work.id),
+
+                # Link per Personal -> Social
+                Link(name="Facebook", url="https://facebook.com",
+                     description="Il mio Facebook", category_id=social_pers.id),
+                Link(name="Instagram", url="https://instagram.com",
+                     description="Il mio Instagram", category_id=social_pers.id),
+                Link(name="Sito Itis", url="https://www.itiscastelli.edu.it/",
+                     description="Il sito dell'Itis Castelli", category_id=social_pers.id),
+
+                # Link per Personal -> Web Tools
+                Link(name="Persona Site", url="https://www.mauriziocozzetto.it",
+                     description="Il mio sito", category_id=web_tools.id)
+            ]
+            db.add_all(links)
+            db.commit()
+
     finally:
         db.close()
 
-    yield  # L'app gira qui
-
-    # Shutdown: (Qui puoi chiudere connessioni a DB o socket se necessario)
-    pass
+    yield
 
 # --- SCHEMI PYDANTIC (Aggiornati a V2) ---
 
