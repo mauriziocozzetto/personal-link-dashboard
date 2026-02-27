@@ -101,7 +101,7 @@ async def lifespan(app: FastAPI):
                      description="Il sito dell'Itis Castelli", category_id=social_pers.id),
 
                 # Link per Personal -> Web Tools
-                Link(name="Persona Site", url="https://www.mauriziocozzetto.it",
+                Link(name="Personal Site", url="https://www.mauriziocozzetto.it",
                      description="Il mio sito", category_id=web_tools.id)
             ]
             db.add_all(links)
